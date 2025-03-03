@@ -142,4 +142,3 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 **Django Startup** aims to make your development process quicker and more efficient. By automating tedious setup tasks, you can focus on building features and solving problems instead of worrying about configurations.
 
 Happy coding! 😄
-```
