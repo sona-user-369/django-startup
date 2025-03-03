@@ -1,0 +1,18 @@
+ma_librairie/
+│── ma_librairie/        # Dossier contenant le code source
+│   │── __init__.py      # Fichier d'initialisation du package
+│   │── utils.py         # Exemple de module
+│
+│── tests/               # Dossier contenant les tests
+│   │── test_utils.py
+│
+│── README.md            # Documentation
+│── setup.py             # Configuration pour PyPI
+│── pyproject.toml       # Informations sur le package
+│── LICENSE              # Licence du projet
+│── .gitignore           # Fichiers à ignorer
+
+pip install --upgrade build twine
+python -m build
+
+python -m twine upload dist/*
