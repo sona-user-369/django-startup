@@ -29,7 +29,7 @@ Once installed, you can quickly start a new Django project with pre-configured f
 1. **Create a new Django project**:
 
    ```bash
-   django-admin startproject your_project_name
+   djs project your_project_name
    ```
 
 2. **Install Django Startup** in your project’s virtual environment:
