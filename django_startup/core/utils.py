@@ -167,3 +167,4 @@ def create_authentication_app(project_name):
         f.write(content)
 
     add_variable_value("AUTH_USER_MODEL", "authentication.User", settings_path)
+
