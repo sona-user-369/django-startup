@@ -13,6 +13,6 @@ def django_startup():
 def project(name):
     """Command for starting the project"""
     install_env(name)
-    click.echo(f"Successfully created project {name}")
+    click.echo(click.style(f"Successfully created project {name}", fg="green"))
 
 

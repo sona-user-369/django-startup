@@ -7,7 +7,8 @@ import os
 
 import click
 
-from django_startup.core.operations import change_variable_value, create_env_file
+from django_startup.core.operations import (
+    change_variable_value, create_env_file, add_variable_value)
 
 
 def generate_env_name(project_name):
@@ -58,6 +59,8 @@ def install_env(project_name):
         decouple_package
     ])
 
+    create_authentication_app(project_name)
+
 
 def create_project_directory(name):
     """Create the project with django-admin startproject."""
@@ -82,7 +85,7 @@ def modify_settings(project_name):
     file_path = os.path.join(project_name, project_name, "settings.py")
     click.echo(f"Modifying settings file at {file_path}")
 
-    """Import decouple package for get variables from .env file"""
+    """Import decouple package for getting variables from .env file"""
 
     with open(file_path, "r") as f:
         content = f.readlines()
@@ -107,9 +110,60 @@ def modify_settings(project_name):
     # Change ALLOWED_HOSTS
     change_variable_value("ALLOWED_HOSTS", "config('ALLOWED_HOSTS')", file_path, with_comma=False)
     # Change INSTALLED_APPS
-    change_variable_value("INSTALLED_APPS", ["rest_framework", "rest_framework.authtoken"] ,
+    change_variable_value("INSTALLED_APPS", ["rest_framework", "rest_framework.authtoken"],
                           file_path, type_variable='list')
 
 
-def create_authentication_app():
-    pass
+def create_authentication_app(project_name):
+    file_path = os.path.join(project_name)
+
+    authentication_dir = os.path.join(project_name, 'authentication')
+
+    subprocess.run(["mkdir", "-p", authentication_dir], check=True)
+
+    settings_path = os.path.join(project_name, project_name, "settings.py")
+
+    click.echo(f"Creating authentication app at {authentication_dir}")
+
+    subprocess.check_call(["django-admin", "startapp", "authentication", authentication_dir])
+
+    change_variable_value("INSTALLED_APPS", "authentication",
+                          settings_path, type_variable='list')
+
+    # creating user in authentication app
+
+    models_file = os.path.join(project_name, "authentication", "models.py")
+
+    with open(models_file, "r") as f:
+        content = f.read()
+
+    # Ensure 'from django.db import models' and 'from django.contrib.auth.models import AbstractUser' exists
+    content = "from django.db import models\n" + content
+    content = "from django.contrib.auth.models import AbstractUser\n" + content
+    content = "import uuid\n" + content
+
+    model_code = f"""class User(AbstractUser):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    phone_number = models.CharField(max_length=100, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    profile_picture	= models.TextField(null=True, blank=True)
+    role = models.CharField(max_length=100,null=True, blank=True)
+    date_of_birth = models.DateField(null=True, blank=True)
+    gender = models.CharField(max_length=100,null=True, blank=True)
+    address = models.TextField(null=True, blank=True)
+    country = models.CharField(max_length=200,null=True, blank=True)
+    two_factor_enabled = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
+    """
+
+    # Append model code at end
+    content = content.rstrip()  # Remove trailing spaces/new lines
+    content += "\n" + model_code.lstrip()  # Ensure proper alignment
+
+    # Write back to models.py
+    with open(models_file, "w") as f:
+        f.write(content)
+
+    add_variable_value("AUTH_USER_MODEL", "authentication.User", settings_path)

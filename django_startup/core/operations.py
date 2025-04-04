@@ -23,7 +23,7 @@ def change_str_variable_value(variable_name, value, filename, with_comma=True):
         content = f.read()
 
     # Match: variable_name = "old_value" (handling spaces & comments)
-    pattern = rf"^\s*{variable_name}\s*=\s*'.*?'"
+    pattern = rf"^\s*{variable_name}\s*=\s*.*?"
     replacement = f'{variable_name} = "{value}"' if with_comma else f'{variable_name} = {value}'
 
     if re.search(pattern, content, re.MULTILINE):
