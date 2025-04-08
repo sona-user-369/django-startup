@@ -51,14 +51,24 @@ def install_env(project_name):
     django_rest_package = "django-rest-framework"
     decouple_package = "python-decouple"
     django_startup_package = "django-startup"
+    django_cors_headers_package = "django-cors-headers"
 
     subprocess.check_call([
         python_executable, "-m", "pip", "install",
         django_package,
         django_rest_package,
-        decouple_package
+        decouple_package,
+        django_cors_headers_package
     ])
 
+    # add cors headers to INSTALLED_APPS
+    settings_path = os.path.join(project_name, project_name, "settings.py")
+    change_variable_value("INSTALLED_APPS", ["corsheaders"],
+                          settings_path, type_variable='list')
+    change_variable_value("MIDDLEWARE", ["corsheaders.middleware.CorsMiddleware"],
+                          settings_path, type_variable='list')
+
+    add_variable_value("CORS_ALLOW_ALL_ORIGINS", "True", settings_path)
     create_authentication_app(project_name)
 
 
@@ -71,7 +81,7 @@ def create_project_directory(name):
         create_project_directory(name)
 
 
-def generate_secret_key(length=50):
+def generate_secret_key(length=100):
     """Generate a random Django SECRET_KEY."""
     chars = string.ascii_letters + string.digits + string.punctuation
     return ''.join(secrets.choice(chars) for _ in range(length))
@@ -166,4 +176,3 @@ def create_authentication_app(project_name):
         f.write(content)
 
     add_variable_value("AUTH_USER_MODEL", "authentication.User", settings_path)
-
