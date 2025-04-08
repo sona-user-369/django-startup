@@ -138,7 +138,6 @@ def create_authentication_app(project_name):
         content = f.read()
 
     # Ensure 'from django.db import models' and 'from django.contrib.auth.models import AbstractUser' exists
-    content = "from django.db import models\n" + content
     content = "from django.contrib.auth.models import AbstractUser\n" + content
     content = "import uuid\n" + content
 
