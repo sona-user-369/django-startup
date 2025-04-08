@@ -3,28 +3,28 @@ import os
 import re
 
 
-def change_variable_value(variable_name, value: [str, list], filename, type_variable='str', with_comma=True):
+def change_variable_value(variable_name, value: [str, list], filename, type_variable='str', with_quote=True):
     if type_variable == '':
         raise ValueError('Type of variable must variable')
 
     if type_variable not in ['str', 'list', 'dict']:
         raise ValueError('type_variable must be str or list or dict')
 
-    if not with_comma:
-        change_str_variable_value(variable_name, value, filename, with_comma=False)
+    if not with_quote:
+        change_str_variable_value(variable_name, value, filename, with_quote=False)
     elif type_variable == 'str':
         change_str_variable_value(variable_name, value, filename)
     elif type_variable == 'list':
         change_list_variable_value(variable_name, value, filename)
 
 
-def change_str_variable_value(variable_name, value, filename, with_comma=True):
+def change_str_variable_value(variable_name, value, filename, with_quote=True):
     with open(filename, "r") as f:
         content = f.read()
 
     # Match: variable_name = "old_value" (handling spaces & comments)
-    pattern = rf"^\s*{variable_name}\s*=\s*.*?"
-    replacement = f'{variable_name} = "{value}"' if with_comma else f'{variable_name} = {value}'
+    pattern = rf"^\s*{variable_name}\s*=\s*.*$"
+    replacement = f'{variable_name} = "{value}"' if with_quote else f'{variable_name} = {value}'
 
     if re.search(pattern, content, re.MULTILINE):
         modified_content = re.sub(pattern, replacement, content, flags=re.MULTILINE)
@@ -34,6 +34,28 @@ def change_str_variable_value(variable_name, value, filename, with_comma=True):
 
     with open(filename, "w") as f:
         f.write(modified_content)
+
+
+def change_list_variable_value(variable_name, value: [str, list], filename):
+    with open(filename, "r") as f:
+        content = f.read()
+
+    # Trouver la liste actuelle
+    match = re.search(rf'{variable_name}\s*=\s*(\[[^\]]*\])', content, re.MULTILINE)
+    if match:
+        actual_list = ast.literal_eval(match.group(1))  # Convertir en liste Python
+        if isinstance(value, str):
+            if value not in actual_list:
+                actual_list.append(value)
+
+        if isinstance(value, list):
+            actual_list = actual_list + value
+
+        # Replace file content
+        content_modified = content.replace(match.group(1), str(actual_list))
+
+        with open(filename, "w") as f:
+            f.write(content_modified)
 
 
 def create_env_file(folder_path, env_vars):
@@ -71,25 +93,3 @@ def add_variable_value(variable_name, value, filename):
 
     with open(filename, "w") as f:
         f.writelines(content)
-
-
-def change_list_variable_value(variable_name, value: [str, list], filename):
-    with open(filename, "r") as f:
-        content = f.read()
-
-    # Trouver la liste actuelle
-    match = re.search(rf'{variable_name}\s*=\s*(\[[^\]]*\])', content, re.MULTILINE)
-    if match:
-        actual_list = ast.literal_eval(match.group(1))  # Convertir en liste Python
-        if isinstance(value, str):
-            if value not in actual_list:
-                actual_list.append(value)
-
-        if isinstance(value, list):
-            actual_list = actual_list + value
-
-        # Replace file content
-        content_modified = content.replace(match.group(1), str(actual_list))
-
-        with open(filename, "w") as f:
-            f.write(content_modified)

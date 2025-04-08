@@ -85,7 +85,7 @@ def modify_settings(project_name):
     file_path = os.path.join(project_name, project_name, "settings.py")
     click.echo(f"Modifying settings file at {file_path}")
 
-    """Import decouple package for getting variables from .env file"""
+    # Import decouple package for getting variables from .env file
 
     with open(file_path, "r") as f:
         content = f.readlines()
@@ -104,11 +104,11 @@ def modify_settings(project_name):
     create_env_file(project_name, env_data)
 
     # Change SECRET_KEY
-    change_variable_value("SECRET_KEY", "config('SECRET_KEY')", file_path, with_comma=False)
+    change_variable_value("SECRET_KEY", "config('SECRET_KEY')", file_path, with_quote=False)
     # Change DEBUG
-    change_variable_value("DEBUG", "config('DEBUG')", file_path, with_comma=False)
+    change_variable_value("DEBUG", "config('DEBUG')", file_path, with_quote=False)
     # Change ALLOWED_HOSTS
-    change_variable_value("ALLOWED_HOSTS", "config('ALLOWED_HOSTS')", file_path, with_comma=False)
+    change_variable_value("ALLOWED_HOSTS", "config('ALLOWED_HOSTS')", file_path, with_quote=False)
     # Change INSTALLED_APPS
     change_variable_value("INSTALLED_APPS", ["rest_framework", "rest_framework.authtoken"],
                           file_path, type_variable='list')
