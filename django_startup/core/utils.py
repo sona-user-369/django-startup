@@ -7,6 +7,7 @@ import os
 
 import click
 
+from django_startup.apps.functions import setup_authentication_serializer_py, add_authentication_view_functions
 from django_startup.core.operations import (
     change_variable_value, create_env_file, add_variable_value)
 
@@ -102,6 +103,8 @@ def modify_settings(project_name):
 
     content.insert(0, "from decouple import config\n")
 
+    content.insert(-1, "")
+
     with open(file_path, "w") as f:
         f.writelines(content)
 
@@ -122,6 +125,36 @@ def modify_settings(project_name):
     # Change INSTALLED_APPS
     change_variable_value("INSTALLED_APPS", ["rest_framework", "rest_framework.authtoken"],
                           file_path, type_variable='list')
+
+    # add LOGGING variable
+
+    logging_config = {
+        'version': 1,
+        'disable_existing_loggers': False,
+        'formatters': {
+            'verbose': {
+                'format': '{levelname} {asctime}  {process:d}  {message}',
+                'style': '{',
+            },
+        },
+        'handlers': {
+            'newfile': {
+                'level': 'DEBUG',
+                'class': 'logging.FileHandler',
+                'filename': './debug.log',
+                'formatter': 'verbose'
+            },
+        },
+        'loggers': {
+            '': {
+                'level': 'DEBUG',
+                'handlers': ['newfile'],
+                'propagate': False,
+            },
+        },
+    }
+
+    add_variable_value("LOGGING", logging_config, file_path)
 
 
 def create_authentication_app(project_name):
@@ -175,4 +208,14 @@ def create_authentication_app(project_name):
     with open(models_file, "w") as f:
         f.write(content)
 
-    add_variable_value("AUTH_USER_MODEL", "authentication.User", settings_path)
+    add_variable_value("AUTH_USER_MODEL", "'authentication.User'", settings_path)
+
+    # Setup user serializer
+
+    setup_authentication_serializer_py(project_name)
+
+    # add authentication views
+
+    add_authentication_view_functions(project_name)
+
+
